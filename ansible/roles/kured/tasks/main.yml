@@ -1,0 +1,25 @@
+---
+- name: Kured | Installing Kured
+  command: "kubectl apply -f https://github.com/weaveworks/kured/releases/download/1.1.0/kured-1.1.0.yaml"
+
+
+# we want to manually take the kured node lock so reboots are disabled by default
+# A function app or some other process should run the unlock command after hours using this command:
+#     kubectl -n kube-system annotate ds kured weave.works/kured-node-lock-
+# and relock it later before working hours.
+# We need to prevent rebooting during work hours because we are only running one instance of most all pods
+- name: Kured | Stop Reboots By Default
+  command: kubectl --overwrite=true --namespace=kube-system annotate ds kured weave.works/kured-node-lock='{"nodeID":"manual"}'
+
+
+- include_tasks: cronjob-rbac.yml
+
+
+# Install the kured unlock cron job
+- name: Kured | Install cron unlock job
+  command: helm upgrade --install --namespace=kube-system kured-unlock "{{ role_path }}/files/kured-cron/." --set schedule="0 2 * * *" --set args={--overwrite=true,annotate,ds,kured,'weave.works/kured-node-lock-'} 
+
+
+# Install the kured lock cron job
+- name: Kured | Install cron lock job
+  command: helm upgrade --install --namespace=kube-system kured-lock "{{ role_path }}/files/kured-cron/." --set schedule="0 5 * * *" --set args={--overwrite=true,annotate,ds,kured,'weave.works/kured-node-lock=\{\"nodeID\":\"manual\"\}'} 

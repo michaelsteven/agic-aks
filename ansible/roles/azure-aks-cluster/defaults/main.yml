@@ -1,0 +1,14 @@
+---
+default_aks_location: eastus2
+default_aks_os_disk_size_gb: 40
+default_aks_agent_count: 3
+default_aks_agent_vm_size: Standard_B2ms
+default_aks_os_type: Linux
+default_aks_kubernetes_version: 1.12.7
+default_aks_enable_oms_agent: true
+default_aks_workspace_region: eastus2
+default_aks_oms_sku: standalone
+default_aks_enable_http_application_routing: false
+default_aks_network_plugin: kubenet
+default_aks_max_pods: 30
+default_aks_enable_rbac: true

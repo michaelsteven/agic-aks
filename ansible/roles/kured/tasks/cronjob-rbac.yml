@@ -1,0 +1,33 @@
+---
+
+- name: Kured CronJob | Creating service account
+  kube:
+    name: "kured-cronjob-sa"
+    namespace: "kube-system"
+    kubectl: "kubectl"
+    resource: "sa"
+    filename: "{{ role_path }}/files/kured-cronjob-sa.yml"
+    state: "present"
+  when: true
+
+
+- name: Kured CronJob | Creating role
+  kube:
+    name: "kured-cronjob-role"
+    namespace: "kube-system"
+    kubectl: "kubectl"
+    resource: "role"
+    filename: "{{ role_path }}/files/kured-daemonset-editor-role.yml"
+    state: "present"
+  when: true
+
+
+- name: Kured CronJob | Creating role binding
+  kube:
+    name: "kured-cronjob-rolebinding"
+    namespace: "kube-system"
+    kubectl: "kubectl"
+    resource: "rolebinding"
+    filename: "{{ role_path }}/files/kured-cronjob-rolebinding.yml"
+    state: "present"
+  when: true

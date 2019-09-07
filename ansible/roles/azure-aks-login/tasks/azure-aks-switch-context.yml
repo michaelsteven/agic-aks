@@ -1,0 +1,6 @@
+---
+- name: Switch to the correct context with kubectl
+  command: kubectl config use-context {{ aks_resource_name }}
+  register: kubctl_output
+- debug:
+    var: kubctl_output

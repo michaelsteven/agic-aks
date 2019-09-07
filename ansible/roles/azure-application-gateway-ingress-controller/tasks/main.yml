@@ -1,0 +1,62 @@
+- name: Install AAD Pod Identity 
+  command: kubectl create -f https://raw.githubusercontent.com/Azure/aad-pod-identity/master/deploy/infra/deployment-rbac.yaml
+  when: true
+
+- name: Get the identity name
+  command: az identity list -g gmf-dev-aks --query '[].{Name:name}' -o tsv
+  register: identity_name_retrieval_results
+- set_fact:
+    identity_name: "{{ identity_name_retrieval_results.stdout }}"
+
+- name: Get the identity client id
+  command: az identity list -g gmf-dev-aks --query '[].{ClientId:clientId}' -o tsv
+  register: identity_client_id_retrieval_results
+- set_fact:
+    identity_client_id: "{{ identity_client_id_retrieval_results.stdout }}"
+
+- name: Get the identity resource id
+  command: az identity list -g gmf-dev-aks --query '[].{Id:id}' -o tsv
+  register: identity_resource_id_retrieval_results
+- set_fact:
+    identity_resource_id: "{{ identity_resource_id_retrieval_results.stdout }}"
+
+- name: Get the gateway name
+  command: az network application-gateway list -g gmf-dev-aks --query '[].{Name:name}' -o tsv
+  register: application_gateway_name_retrieval_results
+- set_fact:
+    application_gateway_name: "{{ application_gateway_name_retrieval_results.stdout }}"
+
+
+- name: Add AGIC repo to Helm
+  command: helm repo add application-gateway-kubernetes-ingress https://appgwingress.blob.core.windows.net/ingress-azure-helm-package/
+
+- name: Have helm update the repo
+  command:  helm repo update
+
+- pause:
+    minutes: 1
+  when: true
+
+
+- name: Create temporary build directory
+  tempfile:
+    state: directory
+  register: tempfolder
+- debug:
+    msg: "{{ tempfolder.path }}"
+
+
+- name: Create AGIC Configuration yaml
+  vars:
+    subscription_id: "{{ azure_subscription_id }}"
+    resourcegroup_name: "{{ aks_dict.resource_group }}"
+    applicationgateway_name: "{{ application_gateway_name }}"
+    identity_resourceid: "{{ identity_resource_id }}"
+    identity_clientid:  "{{ identity_client_id }}"
+  template:
+    src: "helm-config.yaml.j2"
+    dest: "{{ tempfolder.path }}/helm-config.yaml"
+  register: helm_config_manifest
+
+- name: Install helm using the modified config
+  command: helm upgrade --install --namespace=kube-system  -f "{{ tempfolder.path }}/helm-config.yaml" ingress-azure application-gateway-kubernetes-ingress/ingress-azure

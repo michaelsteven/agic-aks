@@ -1,0 +1,34 @@
+---
+- name: Helm (RBAC) Creating Service Account
+  kube:
+    name: "tiller"
+    namespace: "kube-system"
+    kubectl: "kubectl"
+    resource: "sa"
+    filename: "{{ role_path }}/files/tiller-sa.yml"
+    state: "present"
+  when: rbac
+
+- name: Helm | Apply Helm Manifests (RBAC)
+  kube:
+    name: "tiller"
+    namespace: "kube-system"
+    kubectl: "kubectl"
+    resource: "clusterrolebinding"
+    filename: "{{ role_path }}/files/tiller-clusterrolebinding.yml"
+    state: "present"
+  when: rbac
+
+- name: Helm Init
+  command: helm init --service-account tiller
+
+#- name: Patch Helm
+#  command: /usr/local/bin/kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
+
+#- name: Helm Init2
+#  command: helm init
+
+- pause:
+    minutes: 1
+
+

@@ -1,0 +1,51 @@
+apiVersion: batch/v1beta1 #for API server versions < 1.8.0 use batch/v2alpha1 and enable it in the API server
+kind: CronJob
+metadata:
+  name: {{ template "cronjob.fullname" . }}
+  labels:
+    app: {{ template "cronjob.name" . }}
+    chart: {{ template "cronjob.chart" . }}
+    release: "{{ .Release.Name }}"
+    heritage: {{ .Release.Service }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.history.successfulJobs }}
+  failedJobsHistoryLimit: {{ .Values.history.failedJobs }}
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 120
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+            - name: schneiderrepo-acr
+          serviceAccountName: kured-cronjob-sa
+          automountServiceAccountToken: true
+          restartPolicy: "Never"
+          containers:
+          - name: {{ template "cronjob.name" . }}
+            image: "{{ .Values.image.repo }}:{{ .Values.image.tag }}"
+            args:
+              {{- range .Values.args }}
+              - {{ . | quote }}
+              {{- end }}
+            env:
+              - name: "KUBERNETES_SERVICE_HOST"
+                value: "kubernetes.default.svc.cluster.local"
+              - name: "KUBERNETES_PORT_443_TCP_PORT"
+                value: "443"
+              - name: "NAMESPACE"
+                value: "kube-system"
+
+      {{- with .Values.nodeSelector }}
+        nodeSelector:
+{{ toYaml . | indent 10 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+        affinity:
+{{ toYaml . | indent 10 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+        tolerations:
+{{ toYaml . | indent 10 }}
+      {{- end }}

@@ -1,0 +1,59 @@
+---
+
+- name: Get Service Principal Object ID
+  command: "az ad sp show --id {{ aks_client_id }} --query 'objectId' --output tsv"
+  environment:
+    AZ_TENANT: "{{ tenant_id }}"
+    AZ_SUBSCRIPTION: "{{ azure_subscription_id }}"
+  register: ad_sp_show_id_command_output
+- debug:
+    msg: "{{ ad_sp_show_id_command_output.stdout }}"
+
+
+- name: AKS deployment
+  azure_rm_deployment:
+    subscription_id: "{{ azure_subscription_id }}"
+    tenant: "{{ tenant_id }}"
+    state: present
+    location: "{{ aks_location }}"
+    resource_group_name: "{{ aks_resource_group }}"
+    template: "{{ lookup('file', 'templates/template.json') }}"
+    parameters:
+      aksServicePrincipalAppId:
+        value: "{{ aks_client_id }}"
+      aksServicePrincipalClientSecret:
+        value: "{{ aks_client_secret }}"
+      aksServicePrincipalAppId:
+        value: "{{ aks_client_id }}"
+      aksServicePrincipalClientSecret:
+        value: "{{ aks_client_secret }}"
+      aksServicePrincipalObjectId:
+        value: "{{ ad_sp_show_id_command_output.stdout }}"
+      aksDnsPrefix:
+        value: "{{ aks_dns_prefix }}"
+      aksAgentOsDiskSizeGB:
+        value: "{{ aks_os_disk_size_gb }}"
+      aksAgentCount:
+        value: "{{ aks_agent_count }}"
+      aksAgentVMSize:
+        value: "{{ aks_agent_vm_size }}"
+      kubernetesVersion:
+        value: "{{ aks_kubernetes_version }}"
+      aksEnableRBAC:
+        value: "{{ aks_enable_rbac }}"
+      virtualNetworkAddressPrefix:
+        value: 10.0.0.0/8
+      aksSubnetAddressPrefix:
+        value: 10.0.0.0/16
+      applicationGatewaySubnetAddressPrefix:
+        value: 10.1.0.0/16
+      aksServiceCIDR:
+        value: 10.2.0.0/16
+      aksDnsServiceIP:
+        value: 10.2.0.10
+      aksDockerBridgeCIDR:
+        value: 172.17.0.1/16
+      applicationGatewaySku:
+        value: "WAF_v2"
+      aksClusterName:
+        value: "{{ aks_resource_name }}"

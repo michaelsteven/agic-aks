@@ -1,0 +1,18 @@
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  namespace: kube-system
+  name: kured-daemonset-editor
+rules:
+  - apiGroups:
+      - extensions
+    resources:
+      - daemonsets
+    resourceNames:
+      - kured
+    verbs:
+      - get
+      - patch
+      - update
+      - create

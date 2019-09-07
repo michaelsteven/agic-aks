@@ -1,0 +1,35 @@
+kubectl_bin: "/usr/bin/kubectl"
+
+location: "eastus2"
+organization_prefix: "ibm"
+master_key_vault: "{{ organization_prefix }}-devops-vault"
+
+env_name: "dev"
+char_only_env_name: "{{ env_name | replace('-','') }}"
+
+ansible_client_id: 
+azure_subscription_id: 
+tenant_id: 
+
+image_pull_secret: "{{ organization_prefix }}-acr"
+private_image_repo: "{{ organization_prefix }}.azurecr.io"
+
+kured:
+  image: "{{ organization_prefix }}-acr.azurecr.io/devops/kubectl"
+  tag: v1.13.1
+
+
+application_aks_cluster:
+  adm_username: "{{ char_only_env_name }}admin"
+  agent:
+    pool_name: "{{ organization_prefix }}{{ char_only_env_name }}" 
+    #vm_size: "Standard_D2s_v3"
+    #vm_size: "Standard_F8s_v2"
+    #vm_size: "Standard_E2s_v3"
+    vm_size: "Standard_D3_v2"
+    count: 1
+  dns_prefix: "{{ env_name }}"
+  location: "{{ location }}"
+  resource_group: "{{ organization_prefix }}-{{ env_name }}-aks"
+  resource_name: "{{ organization_prefix }}-{{ env_name }}-cluster"
+  lifecycle_tag: "non-production"

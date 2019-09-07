@@ -1,0 +1,4 @@
+apiVersion: v1
+version: 0.0.0
+name: kured-cron
+description: "Kubernetes chron job that runs kubectl command to add or remove kured lock."

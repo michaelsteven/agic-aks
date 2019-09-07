@@ -1,0 +1,51 @@
+---
+
+
+- name: Determine if the private image registry secret exists in the namespace
+  command: "kubectl get secret {{ image_pull_secret }} --namespace={{ namespace }} --no-headers=true -o custom-columns=NAME:.metadata.name --ignore-not-found"
+  register: private_image_repo_secret_exists_in_namespace_result
+
+
+- name: Get the registry username from vault
+  shell: "az keyvault secret show --name 'private-registry-readonly-username' --vault-name '{{ master_key_vault }}' --query '{token: value}'"
+  register: private_registry_readonly_username_retrieval_results
+  when: private_image_repo_secret_exists_in_namespace_result.stdout != "{{ image_pull_secret }}"
+- set_fact:
+    private_registry_readonly_username_retrieval_data: "{{ private_registry_readonly_username_retrieval_results.stdout | from_json }}"
+  when: private_image_repo_secret_exists_in_namespace_result.stdout != "{{ image_pull_secret }}"
+
+
+- name: Get the registry password from vault
+  shell: "az keyvault secret show --name 'private-registry-readonly-password' --vault-name '{{ master_key_vault }}' --query '{token: value}'"
+  register: private_registry_readonly_password_retrieval_results
+  when: private_image_repo_secret_exists_in_namespace_result.stdout != "{{ image_pull_secret }}"
+- set_fact:
+    private_registry_readonly_password_retrieval_data: "{{ private_registry_readonly_password_retrieval_results.stdout | from_json }}"
+  when: private_image_repo_secret_exists_in_namespace_result.stdout != "{{ image_pull_secret }}"
+
+ 
+- name: Get the registry email address from vault
+  shell: "az keyvault secret show --name 'private-registry-email' --vault-name '{{ master_key_vault }}' --query '{token: value}'"
+  register: private_registry_email_retrieval_results
+  when: private_image_repo_secret_exists_in_namespace_result.stdout != "{{ image_pull_secret }}"
+- set_fact:
+     private_registry_email_retrieval_data: "{{ private_registry_email_retrieval_results.stdout | from_json }}"
+  when: private_image_repo_secret_exists_in_namespace_result.stdout != "{{ image_pull_secret }}"
+
+
+- name: Create the kubernetes secret
+  command: 
+    argv:
+      - kubectl 
+      - create 
+      - secret 
+      - docker-registry 
+      - "{{ image_pull_secret }}" 
+      - --docker-server="{{ private_image_repo }}"
+      - "--docker-username={{ private_registry_readonly_username_retrieval_data.token }}"  
+      - "--docker-password={{ private_registry_readonly_password_retrieval_data.token }}"
+      - "--docker-email={{ private_registry_email_retrieval_data.token }}"  
+      - --namespace 
+      - "{{ namespace }}"
+  when: private_image_repo_secret_exists_in_namespace_result.stdout != "{{ image_pull_secret }}"
+

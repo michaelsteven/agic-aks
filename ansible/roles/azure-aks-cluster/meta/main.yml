@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: azure-resource-group
+    resource_group_name: "{{ aks.resource_group }}"
+    resource_group_location: "{{ aks.location }}"

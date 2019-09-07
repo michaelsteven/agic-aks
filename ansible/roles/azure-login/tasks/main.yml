@@ -1,0 +1,6 @@
+---
+- name: log in with a specific service principal
+  command: az login --service-principal -u {{ user }}  -p {{ password }} --tenant {{ tenant }}
+#  register: azure_login_output
+#- debug:
+#    var: azure_login_output

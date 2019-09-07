@@ -1,0 +1,17 @@
+---
+- include_role: 
+    name: azure-login
+  vars:
+    tenant: "{{ tenant_id }}"
+  when: true
+
+- import_tasks: azure-aks-get-credentials.yml
+  vars:
+     aks_resource_group: "{{ resource_group }}"
+     aks_resource_name: "{{ resource_name }}"
+
+
+- import_tasks: azure-aks-switch-context.yml
+  vars:
+     aks_resource_name: "{{ resource_name }}"
+ 

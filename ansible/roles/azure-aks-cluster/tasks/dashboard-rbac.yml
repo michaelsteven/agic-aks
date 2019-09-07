@@ -1,0 +1,8 @@
+- name: Create the cluster role binding for the dashboard
+  command: kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard
+#  kube:
+#    name: "kubernetes-dashboard"
+#    kubectl: "/usr/local/bin/kubectl"
+#    resource: "clusterrolebinding"
+#    filename: "{{ role_path }}/files/dashboard-crb.yml"
+#    state: present

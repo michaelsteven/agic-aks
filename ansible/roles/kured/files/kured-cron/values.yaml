@@ -1,0 +1,32 @@
+image:
+  repo:" "{{ kured.image }}"
+    tag: "{{ kured.tag }}"
+#  repo: registry2-validis.azurecr.io/devops/curl
+#  tag: latest
+
+# Mount path for the configmap
+mountPath: /etc/config
+
+# Schedule to run jobs. Must be in cron time format
+# Ref: https://crontab.guru/
+schedule: "0 1 * * *"
+
+# How many jobs to keep in history
+history:
+  successfulJobs: 1
+  failedJobs: 3
+
+# Sane defaults for resources, tweak for your needs
+resources:
+  requests:
+    memory: 64Mi
+    cpu: 10m
+  limits:
+    memory: 64Mi
+    cpu: 20m
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

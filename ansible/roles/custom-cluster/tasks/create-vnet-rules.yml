@@ -1,0 +1,36 @@
+---
+
+# get the node resource group for the cluster
+# we need this for finding the vnet
+- name: Get the node resource group
+  command: "az aks show --name {{ aks_resource_name }} --resource-group {{ aks_resource_group }} --query 'nodeResourceGroup' -o tsv"
+  register: aks_node_resource_group_output
+- debug:
+    msg: "The node resource group is: {{ aks_node_resource_group_output.stdout }}"
+
+
+# get the subnet ID from the vnet that is in the AKS cluster resource group
+- name: Get the subnet ID of the vnet created by the aks cluster
+  command: "az network vnet list --resource-group {{ aks_node_resource_group_output.stdout }} --query '[].subnets[].id' -o tsv"
+  register: subnet_id_output
+- debug:
+    msg: "The subnet id is: {{ subnet_id_output.stdout }}"
+
+
+# get the vnet name
+- name: Find the vnet name in the node
+  command: "az network vnet list --resource-group {{ aks_node_resource_group_output.stdout }} --query '[].name' -o tsv"
+  register: vnet_name_output
+- debug:
+    msg: "The vnet name is: {{ vnet_name_output.stdout }}"
+
+
+# create an endpoints on the AKS vnet subnet to facilitate communication over private ip addresses
+- name: Add SQL server service endpoint on the aks subnet
+  command: "az network vnet subnet update -n aks-subnet -g {{ aks_node_resource_group_output.stdout }} --vnet-name {{ vnet_name_output.stdout }} --service-endpoints 'Microsoft.Sql' 'Microsoft.Storage' 'Microsoft.ServiceBus' 'Microsoft.AzureActiveDirectory'"
+
+
+# add a vnet access rule for the AKS vnet to access the SQL server
+- name: Add a vnet access rule to the sql server
+  command: "az sql server vnet-rule create --name {{vnet_name_output.stdout }} --server infra-db{{ env_name }} --resource-group {{ env_name }}-dbs --subnet {{subnet_id_output.stdout }}"
+  ignore_errors: yes

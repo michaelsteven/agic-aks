@@ -1,0 +1,38 @@
+
+# if the serviceprincipal doesn't exist, create it 
+- name: Service Principal | Create
+  command: "az ad sp create-for-rbac --skip-assignment --name {{ display_name }}"
+  environment:
+    AZ_TENANT: "{{ tenant_id }}"
+    AZ_SUBSCRIPTION: "{{ azure_subscription_id }}"
+  when: ad_sp_list_command_output.stdout | list | length < 1
+  register: create_service_principal_output
+- set_fact:
+    create_service_principal_results: "{{ create_service_principal_output.stdout | from_json }}"
+
+
+# find the serviceprincipal password
+- debug:
+    msg: "the raw output is {{ create_service_principal_results }}"
+
+
+# store the appid in vault
+- name: Service Principal | Save SP AppID in Keyvault
+  include_role:
+    name: azure-keyvault-secret-create 
+  vars:
+    uri: "https://{{ vault_name }}.vault.azure.net"
+    vaultname: "{{ vault_name }}"
+    secretname: "{{ display_name }}-appid"
+    secretvalue: "{{ create_service_principal_results.appId }}"
+
+
+# store the password in vault
+- name: Service Principal | Save SP Password in Keyvault
+  include_role:
+    name: azure-keyvault-secret-create 
+  vars:
+    uri: "https://{{ vault_name }}.vault.azure.net"
+    vaultname: "{{ vault_name }}"
+    secretname: "{{ display_name }}-pwd"
+    secretvalue: "{{ create_service_principal_results.password  }}"

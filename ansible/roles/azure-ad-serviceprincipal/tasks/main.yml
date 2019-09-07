@@ -1,0 +1,14 @@
+# determine if the ad serviceprincipal exists
+- name: Service Principal | Check if Service Principal exists
+  command: "az ad sp list --display-name {{ display_name }} --query '[].displayName' -o tsv"
+  environment:
+    AZ_TENANT: "{{ tenant_id }}"
+    AZ_SUBSCRIPTION: "{{ azure_subscription_id }}"
+  
+  register: ad_sp_list_command_output
+- debug:
+    msg: "{{ ad_sp_list_command_output.stdout }}"
+
+
+- include_tasks: create-sp-and-save-to-vault.yml
+  when: ad_sp_list_command_output.stdout | list | length < 1

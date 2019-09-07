@@ -1,0 +1,58 @@
+---
+
+# make sure the resource group  exists
+- include_role:
+    name: azure-resource-group
+  vars:
+    resource_group_name: "{{ keyvault.resource_group }}"
+    resource_group_location: "{{ keyvault.location }}"
+
+# create the keyvault
+- name: azure keyvault | Create instance of Key Vault
+  azure_rm_keyvault:
+    subscription_id: "{{ azure_subscription_id }}"
+    tenant: "{{ tenant_id }}"
+    resource_group: "{{ keyvault.resource_group }}"
+    vault_name: "{{ keyvault.name }}"
+    enabled_for_deployment: yes
+    vault_tenant: "{{ keyvault.tenant_id }}"
+    state: present
+    sku:
+      name: "{{ keyvault.sku_name }}"
+    access_policies:
+      "{{ keyvault.access_policies }}"
+
+
+# because we are temporarily using the CLI
+# for azure-keyvault-secrets-create, make sure we are logged
+# into the correct azure context first
+- include_role: 
+    name: azure-login
+  vars:
+    user: "{{ ansible_client_id }}"
+    password: "{{ ansible_client_secret }}"
+    tenant: "{{ tenant_id }}"
+
+# sleep for a minute, saw one time where dns was not updated right away
+- pause:
+    minutes: 1
+
+
+# Create any roles that are defined
+- include_role:
+    name: azure-keyvault-secret-create
+  loop_control:
+    loop_var: secret_item  
+  vars:
+    vaultsecret: "{{ secret_item }}"
+    uri: "{{ keyvault.uri }}"
+    vaultname: "{{ keyvault.name }}"
+    secretname: "{{ secret_item.name }}"
+    secretvalue: "{{ secret_item.value | default( 'GENERATE_UUID32' ) }}"
+  with_items: "{{ keyvault.secrets }}"
+
+
+# verify we can read a secret
+#- name: get secret from azure vault
+#  shell: "az keyvault secret show --name 'EMAIL-DEFAULT-SME-NAME' --vault-name 'mike-vault2' --query '{token: value}'"
+#  register: result

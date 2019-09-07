@@ -1,0 +1,75 @@
+---
+# this role is designed to be called by passing in an 'aks' dictionary object into the role as a variable
+
+# This role checks if a service principal exists and if it doesn't, 
+# it will create it, saving the appid and password in the master_key_vault.
+# We do this so we can have more control over the SP creation
+- include_role:
+    name: azure-ad-serviceprincipal
+  vars:
+    display_name: "{{ aks.resource_name }}-sp"
+    vault_name: "{{ master_key_vault }}"
+  when: true
+
+# get the sp appid from the "master_key_vault", by convention it will end in -appid
+- name: Azure AKS Cluster | Retrieve SP appid secret
+  shell: "az keyvault secret show --name '{{ aks.resource_name }}-sp-appid' --vault-name '{{ master_key_vault }}' --query '{token: value}'"
+  register: sp_appid_retrieval_results
+  when: true
+- set_fact:
+    sp_appid_retrieval_data: "{{ sp_appid_retrieval_results.stdout | from_json }}"
+  when: true
+
+# get the sp password from vault, by convention it will end in -pwd
+- name: Azure AKS Cluster | Retrieve SP pwd secret
+  shell: "az keyvault secret show --name '{{ aks.resource_name }}-sp-pwd' --vault-name '{{ master_key_vault }}' --query '{token: value}'"
+  register: sp_pwd_retrieval_results
+  when: true
+- set_fact:
+    sp_pwd_retrieval_data: "{{ sp_pwd_retrieval_results.stdout | from_json }}"
+  when: true
+
+- import_tasks: azure-aks-deployment.yml
+  vars:
+    aks_location: "{{ aks.location | default( default_aks_location )  }}"
+    aks_resource_group: "{{ aks.resource_group | default( default_aks_resource_group ) }}"
+    aks_resource_name: "{{ aks.resource_name | default( default_aks_resource_name ) }}"
+    aks_dns_prefix: "{{ aks.dns_prefix | default( default_aks_dns_prefix ) }}"
+    aks_os_disk_size_gb: "{{ aks.os_disk_size_gb | default( default_aks_os_disk_size_gb ) }}"  
+           #"{{ ( (aks.os_disk_size_gb == None) | ternary ( default_aks_os_disk_size_gb, default_aks_os_disk_size_gb )) | int }}"
+            #        "{{ aks | selectattr('os_disk_size_gb', 'defined') | map('os_disk_size_gb') | default( default_aks_os_disk_size_gb ) }}"
+    aks_agent_count: "{{ aks.agent.count | default( default_aks_agent_count ) }}"
+    aks_agent_vm_size: "{{ aks.agent.vm_size | default( default_aks_agent_vm_size ) }}"
+    aks_client_id: "{{ sp_appid_retrieval_data.token | default( omit ) }}"
+    aks_client_secret: "{{ sp_pwd_retrieval_data.token | default( omit ) }}"
+    aks_os_type: "{{ aks.os_type | default( default_aks_os_type ) }}"
+    aks_kubernetes_version: "{{ aks.kubernetes_version | default( default_aks_kubernetes_version ) }}"
+    aks_enable_oms_agent: "{{ aks.enable_oms_agent | default( default_aks_enable_oms_agent ) }}"
+    aks_workspace_region: "{{ aks.workspace_region | default( default_aks_workspace_region ) }}"
+    aks_oms_sku: "{{ aks.oms_sku | default( default_aks_oms_sku ) }}"
+    aks_enable_http_application_routing: "{{ aks.enable_http_application_routing | default( default_aks_enable_http_application_routing ) }}"
+    aks_network_plugin: "{{ aks.network_plugin | default( default_aks_network_plugin ) }}"
+    aks_max_pods: "{{ aks.max_pods | default( default_aks_max_pods ) }}"
+    aks_enable_rbac: "{{ aks.enable_rbac | default( default_aks_enable_rbac ) }}"
+  when: true
+
+- include_role: 
+    name: azure-aks-login
+  vars:
+    resource_group: "{{ aks.resource_group | default( default_aks_resource_group ) }}"
+    resource_name: "{{ aks.resource_name | default( default_aks_resource_name ) }}"
+  when: true
+
+
+- import_tasks: dashboard-rbac.yml
+  vars:
+    rbac: "{{ aks.enable_rbac | default( default_aks_enable_rbac ) }}"
+  when: true
+
+
+- import_role: 
+    name: helm
+  vars:
+    rbac: "{{ aks.enable_rbac | default( default_aks_enable_rbac ) }}"
+  when: true
+

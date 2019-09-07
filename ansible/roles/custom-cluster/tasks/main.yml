@@ -1,0 +1,46 @@
+---
+
+- name: Create AKS cluster
+  include_role:
+    name: azure-aks-cluster
+  vars:
+    aks: "{{ aks_dict }}"
+  when: true
+
+
+- name: Install Cert-Manager
+  include_role:
+    name: cert-manager
+  vars:
+    certificate_issuer: "{{ v2_microservice.certificate_issuer }}"
+    certificate_issuer_url: "{{ v2_microservice.certificate_issuer_url }}"
+  when: false
+
+
+- name: Install fluent-bit
+  include_role:
+    name: fluent-bit
+  vars:
+    namespace: "monitoring"
+    elasticsearch_host: "{{ elasticsearch_dnsname }}"
+    elasticsearch_port: 443
+    elasticsearch_tls: "on"
+    elasticsearch_tls_verify: "Off"
+    logstash_prefix: "{{ env_name }}"
+  when: false
+
+
+# ensure that a firewall rule exists that allows the AKS subnet to reach some of the services on private IP addresses
+# Also modifies the SQL server firewall to allow access from AKS subnet
+- include_tasks: create-vnet-rules.yml
+  vars:
+    aks_resource_name: "{{ aks_dict.resource_name }}"
+    aks_resource_group: "{{ aks_dict.resource_group }}"
+  when: false
+
+
+- name: Install Azure Gateway Ingress Controller
+  include_role:
+    name: azure-application-gateway-ingress-controller
+  vars:
+    aks: "{{ aks_dict }}"

@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: image-registry-secret
+    namespace: "kube-system"
+    when: false

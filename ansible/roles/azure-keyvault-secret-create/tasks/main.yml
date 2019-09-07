@@ -1,0 +1,37 @@
+---
+
+# if no value is set for the secret, randomly generate one
+- set_fact:
+    vaultsecret_value: "{{ lookup( 'pipe', '{{role_path}}/files/generate_random_secret.sh') }}"
+  no_log: true
+  when: secretvalue == "GENERATE_UUID32"
+- set_fact:
+    vaultsecret_value: "{{ secretvalue }}"
+  no_log: true
+  when: secretvalue != "GENERATE_UUID32"
+
+
+#######  There appears to be a bug with the secret_value being set to the service principal's 'secret' 
+#######  Using the CLI until it is fixed
+#- name: azure vault secret create | create secret
+#  azure_rm_keyvaultsecret: 
+#    keyvault_uri: "{{ uri }}"
+#    secret_name: "{{ vaultsecret.name }}"
+#    secret_value: "{{ vaultsecret_value }}"
+#    subscription_id: "{{ azure_subscription_id }}" 
+#    client_id: "{{ ansible_client_id }}"
+#    secret: "{{ ansible_client_secret }}"
+#    tenant: "{{ tenant_id }}"
+#    state: present
+
+# show the name of the secret we are creating
+- debug:
+    msg: "the secret name is: {{ secretname }}"
+
+# create the secret via the CLI for now
+- name: azure vault secret create | set secret
+  shell: "az keyvault secret set --name {{ secretname }} --vault-name {{ vaultname }} --value '{{ vaultsecret_value }}'"
+  environment:
+    AZ_TENANT: "{{ tenant_id }}"
+    AZ_SUBSCRIPTION: "{{ azure_subscription_id }}"
+#  no_log: true

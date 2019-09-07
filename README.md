@@ -65,11 +65,18 @@ Varibles requiring modification:
 
 ### Step 4: Launch an instance of the docker container
 
-1. In a new terminal session, execute the following Docker command to run with an interactive terminal the container, mounting in the "ansible" folder:
-    ```
-    docker run -it -v /Users/michaelhepfer/workspaces/michaelsteven/agic-aks/ansible:/ansible michaelsteven/ansible-agic-aks:latest bash
-    ```
-    You should now be at a shell prompt inside the container.
+1. In a terminal window, execute the following Docker command to run with an interactive terminal the container, mounting in the "ansible" folder:
+    - if using a mac or unix based operating system:
+        ```
+        docker run -it -v /<<path to your workspace>>/agic-aks/ansible:/ansible michaelsteven/ansible-agic-aks:latest bash
+        ```
+    - if using Windows 10:
+        - In Docker Desktop under Settings, make sure your local drive is permitted to be shared.
+        - Run the mount command with the path as shown:
+            ```
+            docker run -it -v C:/<<path to your workspace>>/agic-aks/ansible:/ansible michaelsteven/ansible-agic-aks:latest bash
+            ```
+    NOTE: The volume mount path must be an absolute path. IIf successful, you should now be at a shell prompt inside the container.
 
 2. Change into the ansible folder in the container
     ```

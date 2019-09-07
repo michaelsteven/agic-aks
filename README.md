@@ -3,7 +3,7 @@
 ## Overview
 
 ### What is this?
-Microsoft has made available for managed Azure Kubernetes (AKS) clusters an Ingress Controller that leverages the Application Gateway.  More information about the Application Gateway Ingress Controller (AGIC) can be found here: xxxx
+Microsoft has made available for managed Azure Kubernetes (AKS) clusters an Ingress Controller that leverages the Application Gateway.  More information about the Application Gateway Ingress Controller (AGIC) can be found at: https://github.com/Azure/application-gateway-kubernetes-ingress
 
 This repository has an ansible folder that contains a playbook and roles needed to deploy a greefield AKS cluster that uses an AGIC into your Azure subscription.
 

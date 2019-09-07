@@ -1,4 +1,4 @@
-FROM python:3.7.0-stretch
+FROM python:3.7.4-stretch
 
 RUN apt-get update && \
     apt-get install apt-transport-https && \

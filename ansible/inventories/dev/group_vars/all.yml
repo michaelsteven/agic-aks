@@ -1,14 +1,14 @@
 kubectl_bin: "/usr/bin/kubectl"
 
 location: "eastus2"
-organization_prefix: "ibm"
+organization_prefix: "gmf"
 master_key_vault: "{{ organization_prefix }}-devops-vault"
 
 env_name: "dev"
 char_only_env_name: "{{ env_name | replace('-','') }}"
 
-azure_subscription_id: 
-tenant_id: 
+azure_subscription_id: 86d57eaa-9c0e-44fc-b08a-454809fbe076
+tenant_id: 894da426-918e-49c3-8f68-053065a431e2
 
 image_pull_secret: "{{ organization_prefix }}-acr"
 private_image_repo: "{{ organization_prefix }}.azurecr.io"

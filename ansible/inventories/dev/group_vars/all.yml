@@ -7,7 +7,6 @@ master_key_vault: "{{ organization_prefix }}-devops-vault"
 env_name: "dev"
 char_only_env_name: "{{ env_name | replace('-','') }}"
 
-ansible_client_id: 
 azure_subscription_id: 
 tenant_id: 
 

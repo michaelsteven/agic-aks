@@ -74,7 +74,7 @@ Varibles requiring modification:
         - In Docker Desktop under Settings, make sure your local drive is permitted to be shared.
         - Run the mount command with the path as shown:
             ```
-            docker run -it -v C:/<<path to your workspace>>/agic-aks/ansible:/ansible michaelsteven/ansible-agic-aks:latest bash
+            docker run -it -v C:\<<path to your workspace>>\agic-aks\ansible:/ansible michaelsteven/ansible-agic-aks:latest bash
             ```
     NOTE: The volume mount path must be an absolute path. IIf successful, you should now be at a shell prompt inside the container.
 

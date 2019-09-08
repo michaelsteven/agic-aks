@@ -16,14 +16,13 @@ The docker image is used to eliminate the need to install many of the dependenci
 ## Prerequisites
  - [Docker](https://www.docker.com/) installed
  - An understanding of [Docker](https://www.docker.com/) and [Kubernetes](https://kubernetes.io/)
- - Some [Ansible](https://www.ansible.com/)  experience is helpful
-key-vault/) in your Azure Subscription to store secrets
+ - Some [Ansible](https://www.ansible.com/) experience is helpful
  - An [Azure subscription](https://azure.microsoft.com/en-us/free/) with the ability to perform the following actions
     - Create Resource Groups
     - Create Service Principals
     - Create AKS Clusters
     - Permissions to write to an [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/)
-- An [Azure Key Vault](https://azure.microsoft.com/en-us/services/
+- An [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) in your Azure Subscription to place secrets
 
 NOTE: An [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) will need to exist in the subscription, and its name used in a later step when configuring the playbook variables.  In this vault, secrets resulting from the execution of the playbook will be stored for use by the playbook's roles, and for your future reference.  If a suitable vault doesn't exist for this purpose, be sure that one is created prior to running the playbook. 
 

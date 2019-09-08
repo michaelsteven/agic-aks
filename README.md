@@ -78,21 +78,17 @@ Varibles requiring modification:
             ```
     NOTE: The volume mount path must be an absolute path. IIf successful, you should now be at a shell prompt inside the container.
 
-2. Change into the ansible folder in the container
-    ```
-    cd /ansible
-    ```
-3. Log into your Azure subscription from within the container
+2. Log into your Azure subscription from within the container
     - Inside the docker container shell, run the AZ Login command:
         ```
-        az login <subscription id>
+        az login
         ```
     - when prompted, follow the instructions presented to validate your account.
 
 ### Step 5. Run the "create-cluster" playbook
-1. Inside the docker container at the shell prompt, run the "ansible-playbook" command: 
+1. Inside the docker container at the shell prompt, run the "ansible-playbook" command:
     ```
-    ansible-playbook create-cluster.yml -vvvv
+    ANSIBLE_CONFIG=/ansible.cfg ansible-playbook /ansible/create-cluster.yml -vvvv
     ```
 2.  Watch the command output looking for failures. Your AGIC and AKS infrastructure components should begin to be generated in a new Resource Group within your Azure subscription.
 

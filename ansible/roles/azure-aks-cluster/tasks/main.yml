@@ -51,7 +51,6 @@
     aks_network_plugin: "{{ aks.network_plugin | default( default_aks_network_plugin ) }}"
     aks_max_pods: "{{ aks.max_pods | default( default_aks_max_pods ) }}"
     aks_enable_rbac: "{{ aks.enable_rbac | default( default_aks_enable_rbac ) }}"
-  when: true
 
 - include_role: 
     name: azure-aks-login

@@ -12,17 +12,13 @@
 
 - name: AKS deployment
   azure_rm_deployment:
-    subscription_id: "{{ azure_subscription_id }}"
+    #subscription_id: "{{ azure_subscription_id }}"
     tenant: "{{ tenant_id }}"
     state: present
     location: "{{ aks_location }}"
     resource_group_name: "{{ aks_resource_group }}"
     template: "{{ lookup('file', 'templates/template.json') }}"
     parameters:
-      aksServicePrincipalAppId:
-        value: "{{ aks_client_id }}"
-      aksServicePrincipalClientSecret:
-        value: "{{ aks_client_secret }}"
       aksServicePrincipalAppId:
         value: "{{ aks_client_id }}"
       aksServicePrincipalClientSecret:

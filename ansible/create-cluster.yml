@@ -5,14 +5,6 @@
 
   tasks:
 
-    - include_role:
-        name: azure-login
-      vars:
-        user: "{{ ansible_client_id }}"
-        password: "{{ ansible_client_secret }}"
-        tenant: "{{ tenant_id }}"
-
-
     - include_role: 
         name: custom-cluster
       vars:
